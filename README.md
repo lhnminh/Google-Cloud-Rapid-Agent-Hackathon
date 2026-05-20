@@ -43,5 +43,3 @@ Since this is in the ideation phase, our focus has been on defining the architec
 This repository will serve as our working blueprint for the system design, including mock API calls, data schema drafts, and cloud resource mapping. We are currently focused on finalizing service partnerships and solidifying the primary language stack.
 
 **Need to collaborate?** Feel free to open an issue discussing potential message services or scheduling edge cases!
-
-
