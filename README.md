@@ -1,10 +1,6 @@
 # Google-Cloud-Rapid-Agent-Hackathon
 
-Since you asked for the actual `.md` file content, I'm providing the entire text below enclosed in a single markdown code block.
 
-**Instructions:** Copy everything inside the box and paste it into a text editor (like VS Code or Sublime Text). Then save that file as `README.md`.
-
-***
 
 ```markdown
 # 🗓️ [TBD: The Name] - Universal Message Automation Engine
