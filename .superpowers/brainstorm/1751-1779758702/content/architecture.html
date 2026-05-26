@@ -1,0 +1,61 @@
+<h2>Architecture — Option A with API boundary</h2>
+<p class="subtitle">Streamlit calls a single backend endpoint; agent runs there</p>
+
+<div style="display:flex;flex-direction:column;gap:24px;max-width:640px;margin:0 auto;">
+
+  <!-- Flow diagram -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;">
+
+    <div style="text-align:center;padding:16px 20px;background:#1e1e2e;border:1px solid #6366f1;border-radius:12px;min-width:120px;">
+      <div class="label">Frontend</div>
+      <div style="font-size:14px;color:#cdd6f4;margin-top:4px;">Streamlit</div>
+      <div style="font-size:11px;color:#6c7086;margin-top:2px;">chat UI</div>
+    </div>
+
+    <div style="padding:0 8px;color:#6366f1;font-size:20px;font-weight:bold;">→</div>
+
+    <div style="text-align:center;padding:16px 20px;background:#1e1e2e;border:2px solid #f38ba8;border-radius:12px;min-width:140px;">
+      <div class="label" style="color:#f38ba8;">API Endpoint</div>
+      <div style="font-size:13px;color:#cdd6f4;margin-top:4px;font-family:monospace;">POST /send-message</div>
+      <div style="font-size:11px;color:#6c7086;margin-top:2px;">FastAPI</div>
+    </div>
+
+    <div style="padding:0 8px;color:#6366f1;font-size:20px;font-weight:bold;">→</div>
+
+    <div style="text-align:center;padding:16px 20px;background:#1e1e2e;border:1px solid #a6e3a1;border-radius:12px;min-width:120px;">
+      <div class="label" style="color:#a6e3a1;">Browser Agent</div>
+      <div style="font-size:13px;color:#cdd6f4;margin-top:4px;">browser-use</div>
+      <div style="font-size:11px;color:#6c7086;margin-top:2px;">+ Claude API</div>
+    </div>
+
+    <div style="padding:0 8px;color:#6366f1;font-size:20px;font-weight:bold;">→</div>
+
+    <div style="text-align:center;padding:16px 20px;background:#1e1e2e;border:1px solid #fab387;border-radius:12px;min-width:100px;">
+      <div class="label" style="color:#fab387;">Messenger</div>
+      <div style="font-size:13px;color:#cdd6f4;margin-top:4px;">browser nav</div>
+      <div style="font-size:11px;color:#6c7086;margin-top:2px;">facebook.com</div>
+    </div>
+  </div>
+
+  <!-- API contract -->
+  <div style="background:#1e1e2e;border:1px solid #2e2e3e;border-radius:12px;padding:20px;">
+    <div class="label" style="margin-bottom:12px;">API Contract</div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:#a6adc8;margin-bottom:4px;">REQUEST</div>
+      <pre style="background:#181825;border-radius:8px;padding:12px;font-size:12px;color:#a6e3a1;margin:0;">{
+  "instruction": "Send John a reminder about tomorrow's meeting"
+}</pre>
+    </div>
+
+    <div>
+      <div style="font-size:11px;color:#a6adc8;margin-bottom:4px;">RESPONSE</div>
+      <pre style="background:#181825;border-radius:8px;padding:12px;font-size:12px;color:#a6e3a1;margin:0;">{
+  "status": "sent" | "clarification_needed" | "failed",
+  "message": "Sent to John Smith: 'Hey John, just a reminder...'",
+  "clarification": "Found 2 contacts named John. Which one?"
+}</pre>
+    </div>
+  </div>
+
+</div>
