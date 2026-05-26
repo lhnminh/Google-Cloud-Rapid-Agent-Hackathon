@@ -34,6 +34,7 @@ if instruction:
                 data = {"status": "failed", "message": str(e), "clarification": ""}
 
         if data.get("status") == "sent":
+            #Look into this whenever status is sent again. This is still a test
             reply = f"Done! {data['message']}"
         elif data.get("status") == "clarification_needed":
             reply = data["clarification"]
