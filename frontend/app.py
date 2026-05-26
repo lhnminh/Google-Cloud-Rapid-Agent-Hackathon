@@ -33,12 +33,12 @@ if instruction:
             except Exception as e:
                 data = {"status": "failed", "message": str(e), "clarification": ""}
 
-        if data["status"] == "sent":
+        if data.get("status") == "sent":
             reply = f"Done! {data['message']}"
-        elif data["status"] == "clarification_needed":
+        elif data.get("status") == "clarification_needed":
             reply = data["clarification"]
         else:
-            reply = f"Something went wrong: {data['message']}"
+            reply = f"Something went wrong: {data.get('message', 'Unknown error')}"
 
         st.write(reply)
         st.session_state.messages.append({"role": "assistant", "content": reply})
