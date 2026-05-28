@@ -1,0 +1,10 @@
+2026/05/28-22:13:57.455 19882c Reusing MANIFEST /Users/minhle/Documents/Google-Cloud-Rapid-Agent-Hackathon/test/sessions/facebook/Default/IndexedDB/https_www.facebook.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/05/28-22:13:57.456 19882c Recovering log #10
+2026/05/28-22:13:57.456 19882c Reusing old log /Users/minhle/Documents/Google-Cloud-Rapid-Agent-Hackathon/test/sessions/facebook/Default/IndexedDB/https_www.facebook.com_0.indexeddb.leveldb/000010.log 
+2026/05/28-22:13:57.957 19882d Compacting 1@1 + 1@2 files
+2026/05/28-22:13:57.971 19882d Generated table #13@1: 18506 keys, 2145869 bytes
+2026/05/28-22:13:57.973 19882d Generated table #14@1: 1467 keys, 115063 bytes
+2026/05/28-22:13:57.973 19882d Compacted 1@1 + 1@2 files => 2260932 bytes
+2026/05/28-22:13:57.975 19882d compacted to: files[ 0 0 2 0 0 0 0 ]
+2026/05/28-22:13:57.975 19882d Delete type=2 #11
+2026/05/28-22:13:57.975 19882d Delete type=2 #8
