@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from backend.text_function import generate_ai_text
 
 app = FastAPI()
 
@@ -10,5 +11,5 @@ class SendMessageRequest(BaseModel):
 
 @app.post("/send-message")
 async def send_message(request: SendMessageRequest):
-    print(f"Received: {request.instruction}")
-    return {"status": "sent", "message": request.instruction, "clarification": ""}
+    message = generate_ai_text(request.instruction)
+    return {"status": "sent", "message": message, "clarification": ""}
