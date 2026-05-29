@@ -30,8 +30,7 @@ uv pip install -r requirements.txt
 ### 4. Set up environment variables
 
 ```bash
-cp .env.example .env
-# Open .env and fill in your API keys
+./setup.sh
 ```
 
 ---
@@ -47,9 +46,6 @@ source .venv/Scripts/activate
 ### 2. Start the server
 
 ```bash
-uv run uvicorn backend.main:app --reload --port 8000
-
-
 python -m uvicorn backend.main:app --reload --port 8000
 ```
 
