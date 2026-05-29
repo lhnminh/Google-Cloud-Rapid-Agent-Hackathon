@@ -31,27 +31,23 @@ uv pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Open .env and fill in your ANTHROPIC_API_KEY
+# Open .env and fill in your API keys
 ```
 
 ---
 
 ## Daily startup
 
-## 1. Activate virtual environment
+### 1. Activate virtual environment
 
 ```bash
 source .venv/Scripts/activate
 ```
 
-## 2. Backend
+### 2. Start the server
 
 ```bash
-uvicorn backend.main:app --reload --port 8000
+uv run uvicorn backend.main:app --reload --port 8000
 ```
 
-## 3. Frontend
-
-```bash
-streamlit run frontend/app.py
-```
+Then open http://localhost:8000 in your browser.
