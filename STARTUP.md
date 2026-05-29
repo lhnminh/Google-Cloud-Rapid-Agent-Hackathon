@@ -48,6 +48,9 @@ source .venv/Scripts/activate
 
 ```bash
 uv run uvicorn backend.main:app --reload --port 8000
+
+
+python -m uvicorn backend.main:app --reload --port 8000
 ```
 
 Then open http://localhost:8000 in your browser.
