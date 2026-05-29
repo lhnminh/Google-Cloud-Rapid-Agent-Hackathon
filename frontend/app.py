@@ -3,7 +3,24 @@ import streamlit as st
 
 BACKEND_URL = "http://localhost:8000"
 
-st.title("Message Agent")
+st.set_page_config(page_title="Message Agent", page_icon="💬", layout="centered")
+
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Hide Streamlit footer */
+    footer { visibility: hidden; }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("## 💬 Message Agent")
+st.caption("Tell me who to message and what to say — I'll write and send it for you.")
+st.divider()
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -14,7 +31,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-instruction = st.chat_input("Tell me who to message and what to say…")
+instruction = st.chat_input("e.g. Send John a reminder about tomorrow's meeting…")
 
 if instruction:
     st.session_state.messages.append({"role": "user", "content": instruction})
@@ -22,7 +39,7 @@ if instruction:
         st.write(instruction)
 
     with st.chat_message("assistant"):
-        with st.spinner("Sending via Messenger…"):
+        with st.spinner("Drafting and sending…"):
             try:
                 response = httpx.post(
                     f"{BACKEND_URL}/send-message",

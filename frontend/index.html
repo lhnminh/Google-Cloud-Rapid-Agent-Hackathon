@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>forgetText</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Google Sans', sans-serif; }
+
+    body {
+      background: #0f0f0f;
+      color: #e8e8e8;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 720px;
+      padding: 24px 16px 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      display: none;
+    }
+
+    body.active header {
+      display: block;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    #chat {
+      flex: 1;
+      width: 100%;
+      max-width: 720px;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    body.active #chat {
+      display: flex;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .message.assistant {
+      background: #1e1e1e;
+      color: #e8e8e8;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user {
+      background: #2f80ed;
+      color: #ffffff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.error {
+      background: #2a1a1a;
+      color: #f87171;
+      align-self: flex-start;
+    }
+
+    /* Centered state */
+    #center-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 720px;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    #center-wrap h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    #center-wrap p {
+      font-size: 0.85rem;
+      color: #666;
+      text-align: center;
+    }
+
+    body.active #center-wrap {
+      display: none;
+    }
+
+    /* Bottom input — hidden until active */
+    #input-area {
+      display: none;
+      width: 100%;
+      max-width: 720px;
+      padding: 12px 16px 24px;
+      gap: 8px;
+    }
+
+    body.active #input-area {
+      display: flex;
+    }
+
+    /* Shared input row */
+    .input-row {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      color: #e8e8e8;
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: #555; }
+    input[type="text"]:focus { border-color: #2f80ed; }
+
+    button {
+      background: #2f80ed;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 10px 18px;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #1a6fd4; }
+    button:disabled { background: #1e3a5f; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>forgetText</h1>
+    <p>Tell me who to message and what to say.</p>
+  </header>
+
+  <div id="chat"></div>
+
+  <!-- Centered landing state -->
+  <div id="center-wrap">
+    <h2>forgetText</h2>
+    <p>Tell me who to message and what to say.</p>
+    <div class="input-row">
+      <input id="input-center" type="text" placeholder="e.g. Send John a reminder about tomorrow's meeting…" />
+      <button id="send-center">Send</button>
+    </div>
+  </div>
+
+  <!-- Bottom input — shown after first message -->
+  <div id="input-area">
+    <input id="input-bottom" type="text" placeholder="e.g. Send John a reminder about tomorrow's meeting…" />
+    <button id="send-bottom">Send</button>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const body = document.body;
+
+    function addMessage(text, role) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function getActiveInput() {
+      return body.classList.contains('active')
+        ? document.getElementById('input-bottom')
+        : document.getElementById('input-center');
+    }
+
+    async function handleSend() {
+      const input = getActiveInput();
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Switch to active layout on first send
+      if (!body.classList.contains('active')) {
+        body.classList.add('active');
+      }
+
+      addMessage(text, 'user');
+      input.value = '';
+
+      document.getElementById('send-bottom').disabled = true;
+      document.getElementById('send-center').disabled = true;
+
+      const thinking = document.createElement('div');
+      thinking.className = 'message assistant';
+      thinking.textContent = 'Thinking…';
+      chat.appendChild(thinking);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const res = await fetch('/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instruction: text }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'sent') {
+          thinking.textContent = `Done! ${data.message}`;
+        } else if (data.status === 'clarification_needed') {
+          thinking.textContent = data.clarification;
+        } else {
+          thinking.className = 'message error';
+          thinking.textContent = `Something went wrong: ${data.message || 'Unknown error'}`;
+        }
+      } catch (e) {
+        thinking.className = 'message error';
+        thinking.textContent = `Could not reach the server: ${e.message}`;
+      }
+
+      document.getElementById('send-bottom').disabled = false;
+      document.getElementById('send-center').disabled = false;
+      document.getElementById('input-bottom').focus();
+    }
+
+    document.getElementById('send-center').addEventListener('click', handleSend);
+    document.getElementById('send-bottom').addEventListener('click', handleSend);
+
+    document.getElementById('input-center').addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
+    document.getElementById('input-bottom').addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
+  </script>
+</body>
+</html>
