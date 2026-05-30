@@ -5,20 +5,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def generate_ai_text(user_prompt: str) -> str:
+def extract_schedule_details(user_prompt: str) -> str:
     try:
         client = genai.Client()
-
-        # Define a configuration to control the model behavior
+        
+        system_instruction = """
+        You are an advanced scheduling parser and message generator. 
+        Analyze the user prompt and extract or generate the following pieces:
+        
+        1. 'recipient': The name of the person receiving the message.
+        2. 'message': The exact content to send. 
+           - If the user specifies exactly what to say (e.g., 'say hello' or 'tell them I am running late'), use that exact message.
+           - If the user gives an intent (e.g., 'wish them a happy anniversary'), generate a highly appropriate, tailored, and creative message matching that intent.
+        3. 'execution_time': The target date and time formatted strictly as 'YYYY-MM-DD HH:MM:SS'. 
+           Assume the current year is 2026. If the user says 'at 14:30 tomorrow', compute the exact timestamp.
+        
+        Return ONLY a raw JSON object matching this structure. Do not include markdown code blocks or any conversational text.
+        """
+        
         config = types.GenerateContentConfig(
-            # Tell the AI how to behave before it reads the prompt
-            system_instruction="You are a precise backend assistant. Do not provide a list of options. Do not provide multiple choices. Provide exactly ONE final response or message directly based on the user's request. No commentary, no intro, no outro.",
-            
-            # Tell the API to only generate 1 candidate response
-            candidate_count=1, 
-            
-            # Low temperature makes the AI more focused and less likely to wander into multiple ideas
-            temperature=0.3, 
+            system_instruction=system_instruction,
+            temperature=0.2, 
         )
         
         response = client.models.generate_content(
@@ -30,12 +37,5 @@ def generate_ai_text(user_prompt: str) -> str:
         return response.text
         
     except Exception as e:
-        return f"An error occurred: {str(e)}"
-
-# Simple Local Test
-if __name__ == "__main__":
-    test_prompt = "Write a short, cool birthday message for Minh."
-    print(f"Prompt: {test_prompt}\n")
+        return f"Error: {str(e)}"
     
-    ai_response = generate_ai_text(test_prompt)
-    print(f"AI Response:\n{ai_response}")
