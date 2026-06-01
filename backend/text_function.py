@@ -3,7 +3,11 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
+# Load .env from current working directory or fall back to project root
 load_dotenv()
+root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+if os.path.exists(root_env):
+    load_dotenv(root_env)
 
 def extract_schedule_details(user_prompt: str) -> str:
     try:

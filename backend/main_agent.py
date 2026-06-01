@@ -37,9 +37,10 @@ def parse_json_response(raw: str) -> dict:
 
 def verify_login_session():
     print("\nPerforming Immediate Pre-Flight Login Check...")
+    session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sessions", "facebook")
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
-            user_data_dir="./sessions/facebook",
+            user_data_dir=session_dir,
             headless=False
         )
         page = browser.new_page()
@@ -62,6 +63,14 @@ def verify_login_session():
 def main_agent(user_command: str):
     print(f"\nWeb request received instruction: {user_command}")
     json_raw = extract_schedule_details(user_command)
+    
+    if json_raw.startswith("Error:"):
+        print(f"Error in extract_schedule_details: {json_raw}")
+        return {
+            "status": "error",
+            "message": json_raw,
+            "clarification": ""
+        }
     
     try:
         data = parse_json_response(json_raw)
@@ -112,6 +121,10 @@ def deploy_agent():
     
     print("\nAI Brain analyzing your command...")
     json_raw = extract_schedule_details(user_command)
+    
+    if json_raw.startswith("Error:"):
+        print(f"\nFailed. Gemini returned an error: {json_raw}")
+        return
     
     try:
         data = parse_json_response(json_raw)
