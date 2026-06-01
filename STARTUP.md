@@ -27,26 +27,22 @@ source .venv/Scripts/activate
 uv pip install -r requirements.txt
 ```
 
-### 4. Set up environment variables
-
-```bash
-./setup.sh
-```
-
 ---
 
 ## Daily startup
 
-### 1. Activate virtual environment
+## 1. Activate virtual environment
 
 ```bash
 source .venv/Scripts/activate
 ```
 
-### 2. Start the server
+## 2. Backend + Front End
 
 ```bash
-python -m uvicorn backend.main:app --reload --port 8000
+uvicorn backend.main:app --reload --port 8000
 ```
 
-Then open http://localhost:8000 in your browser.
+Then 
+
+open 127.0.0.1:8000
