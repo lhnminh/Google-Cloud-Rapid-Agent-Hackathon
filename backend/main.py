@@ -1,8 +1,13 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
+# pyrefly: ignore [missing-import]
 from fastapi.responses import FileResponse
+# pyrefly: ignore [missing-import]
 from pydantic import BaseModel
-from backend.text_function import generate_ai_text
 import os     
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from main_agent import main_agent
 
 app = FastAPI()
 
@@ -20,5 +25,4 @@ class SendMessageRequest(BaseModel):
 
 @app.post("/send-message")
 async def send_message(request: SendMessageRequest):
-    message = generate_ai_text(request.instruction)
-    return {"status": "sent", "message": message, "clarification": ""}
+    return main_agent(request.instruction)

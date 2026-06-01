@@ -1,5 +1,6 @@
 import os
 import time
+# pyrefly: ignore [missing-import]
 from playwright.sync_api import sync_playwright
 
 def run_browser_agent(recipient_name: str, message_text: str):
