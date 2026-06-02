@@ -11,3 +11,4 @@ google-genai
 python-dotenv
 playwright
 apscheduler
+tzlocal

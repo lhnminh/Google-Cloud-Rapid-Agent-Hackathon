@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
@@ -13,7 +14,13 @@ def extract_schedule_details(user_prompt: str) -> str:
     try:
         client = genai.Client()
         
-        system_instruction = """
+        now = datetime.now()
+        current_context = (
+            f"Current Timestamp: {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Current Day of Week: {now.strftime('%A')}"
+        )
+        
+        system_instruction = f"""
         You are an advanced scheduling parser and message generator. 
         Analyze the user prompt and extract or generate the following pieces:
         
@@ -22,7 +29,14 @@ def extract_schedule_details(user_prompt: str) -> str:
            - If the user specifies exactly what to say (e.g., 'say hello' or 'tell them I am running late'), use that exact message.
            - If the user gives an intent (e.g., 'wish them a happy anniversary'), generate a highly appropriate, tailored, and creative message matching that intent.
         3. 'execution_time': The target date and time formatted strictly as 'YYYY-MM-DD HH:MM:SS'. 
-           Assume the current year is 2026. If the user says 'at 14:30 tomorrow', compute the exact timestamp.
+
+        CRITICAL TIME CONTEXT AND LOGIC RULES:
+        Use the following current clock data as your absolute reference point to calculate relative values:
+        {current_context}
+
+        - REGIVE AMBIGUITY / CLOSEST FUTURE RULE: If a date format is ambiguous (e.g., '3.6' or '6.3' could mean March 6th or June 3rd), always resolve it to the closest valid date in the FUTURE relative to the current timestamp.
+        - INTELLIGENT AM/PM WRAPPING: If the user provides a raw 12-hour timestamp without an explicit AM/PM marker (e.g., '1:00'), and that time has already passed for the current day, assume they intended the upcoming afternoon/evening slot (e.g., if it is currently 11:00 AM, '1:00' must be interpreted as 13:00:00).
+        - Relative calculations like 'tomorrow', 'tonight', or 'next Tuesday' must be derived exactly from the current day of the week provided above.
         
         Return ONLY a raw JSON object matching this structure. Do not include markdown code blocks or any conversational text.
         """
@@ -42,4 +56,3 @@ def extract_schedule_details(user_prompt: str) -> str:
         
     except Exception as e:
         return f"Error: {str(e)}"
-    
