@@ -3,6 +3,7 @@ import time
 import os
 import sys
 from datetime import datetime
+from tzlocal import get_localzone
 
 # Add the backend directory to sys.path to allow execution from anywhere
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -19,7 +20,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 # Initialize background scheduler for web app requests
-bg_scheduler = BackgroundScheduler()
+bg_scheduler = BackgroundScheduler(timezone=str(get_localzone()))
 bg_scheduler.start()
 
 def parse_json_response(raw: str) -> dict:
@@ -141,7 +142,7 @@ def deploy_agent():
         # Run the login check RIGHT NOW before sleeping
         verify_login_session()
         
-        scheduler = BlockingScheduler()
+        scheduler = BlockingScheduler(timezone=str(get_localzone()))
         
         scheduler.add_job(
             run_browser_agent, 
