@@ -169,6 +169,43 @@
 
     button:hover { background: #1a6fd4; }
     button:disabled { background: #1e3a5f; cursor: not-allowed; }
+
+    /* Login panel */
+    #login-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 720px;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    #login-panel h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    #login-panel p {
+      font-size: 0.85rem;
+      color: #666;
+      text-align: center;
+    }
+
+    #login-status-msg {
+      font-size: 0.8rem;
+      color: #aaa;
+      text-align: center;
+      display: none;
+    }
+
+    body.active #login-panel {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -176,6 +213,14 @@
     <h1>forgetText</h1>
     <p>Tell me who to message and what to say.</p>
   </header>
+
+  <!-- Login panel — shown when no Facebook session exists -->
+  <div id="login-panel">
+    <h2>forgetText</h2>
+    <p>Connect your Facebook account to start scheduling messages.</p>
+    <button id="connect-btn">Connect Facebook</button>
+    <span id="login-status-msg">Browser opened — please log in to Facebook in the window that just appeared...</span>
+  </div>
 
   <div id="chat"></div>
 
@@ -198,6 +243,53 @@
   <script>
     const chat = document.getElementById('chat');
     const body = document.body;
+
+    // --- Login flow ---
+    const loginPanel = document.getElementById('login-panel');
+    const connectBtn = document.getElementById('connect-btn');
+    const loginStatusMsg = document.getElementById('login-status-msg');
+    const centerWrap = document.getElementById('center-wrap');
+
+    (async function checkLoginOnLoad() {
+      const res = await fetch('/login/status');
+      const data = await res.json();
+      if (data.logged_in) {
+        loginPanel.style.display = 'none';
+      } else {
+        centerWrap.style.display = 'none';
+      }
+    })();
+
+    function pollLoginStatus() {
+      let succeeded = false;
+
+      const interval = setInterval(async () => {
+        const res = await fetch('/login/status');
+        const data = await res.json();
+        if (data.logged_in) {
+          succeeded = true;
+          clearInterval(interval);
+          loginPanel.style.display = 'none';
+          centerWrap.style.display = '';
+        }
+      }, 2000);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        if (!succeeded) {
+          loginStatusMsg.textContent = 'Login timed out. Please try again.';
+          connectBtn.disabled = false;
+        }
+      }, 130000);
+    }
+
+    connectBtn.addEventListener('click', async () => {
+      connectBtn.disabled = true;
+      loginStatusMsg.style.display = 'block';
+      await fetch('/login/start', { method: 'POST' });
+      pollLoginStatus();
+    });
+    // --- End login flow ---
 
     function addMessage(text, role) {
       const div = document.createElement('div');
