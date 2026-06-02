@@ -9,7 +9,14 @@
       "Bash(mv front-end:*)",
       "Bash(python -c \"import backend; print\\(''backend module imports successfully''\\)\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(python -m pytest test/test_login_status.py -v)",
+      "Bash(uv add:*)",
+      "Bash(where uv:*)",
+      "Bash(\"/c/Users/VHV/AppData/Local/Python/pythoncore-3.14-64/Scripts/uv.exe\" add:*)",
+      "Bash(\"/c/Users/VHV/AppData/Local/Python/pythoncore-3.14-64/Scripts/uv.exe\" pip:*)",
+      "Bash(.venv/Scripts/python.exe -c \"import playwright; print\\(''playwright ok''\\)\")",
+      "Bash(uv run:*)"
     ],
     "additionalDirectories": [
       "c:\\Users\\VHV\\Documents\\Learn\\Google-Cloud-Rapid-Agent-Hackathon"
