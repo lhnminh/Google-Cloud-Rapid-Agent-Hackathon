@@ -58,6 +58,13 @@ def verify_login_session():
         
         input("Press Enter here once your Facebook Inbox is fully loaded...")
         print("Session saved successfully! Closing browser until scheduled time...")
+        # Write the flag file to match the backend login status indicator
+        flag_path = os.path.join(session_dir, "logged_in.flag")
+        try:
+            with open(flag_path, "w") as f:
+                f.write("true")
+        except Exception as e:
+            print(f"Warning: Could not create flag file: {e}")
         browser.close()
 
 def main_agent(user_command: str):
