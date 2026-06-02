@@ -40,7 +40,7 @@ source .venv/Scripts/activate
 ## 2. Backend + Front End
 
 ```bash
-uvicorn backend.main:app --reload --port 8000
+python -m uvicorn backend.main:app --reload --port 8000
 ```
 
 Then 
