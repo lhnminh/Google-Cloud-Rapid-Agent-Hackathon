@@ -1,0 +1,12 @@
+.venv/
+backend/sessions/
+.env
+__pycache__/
+*.pyc
+*.pyo
+test/
+scripts/
+docs/
+.git/
+.claude/
+*.md

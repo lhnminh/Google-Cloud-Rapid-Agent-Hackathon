@@ -206,9 +206,64 @@
     body.active #login-panel {
       display: none;
     }
+
+    /* Status Badge styling */
+    #fb-status-badge {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30, 30, 30, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(47, 128, 237, 0.35);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #ffffff;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    #fb-status-badge:hover {
+      background: rgba(47, 128, 237, 0.15);
+      border-color: rgba(47, 128, 237, 0.6);
+      box-shadow: 0 4px 24px rgba(47, 128, 237, 0.2);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #27ae60;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #2ecc71, 0 0 16px #2ecc71;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Facebook Status Badge -->
+  <div id="fb-status-badge">
+    <span class="status-dot"></span>
+    <span>Facebook Connected</span>
+  </div>
+
   <header>
     <h1>forgetText</h1>
     <p>Tell me who to message and what to say.</p>
@@ -255,8 +310,10 @@
       const data = await res.json();
       if (data.logged_in) {
         loginPanel.style.display = 'none';
+        document.getElementById('fb-status-badge').style.display = 'flex';
       } else {
         centerWrap.style.display = 'none';
+        document.getElementById('fb-status-badge').style.display = 'none';
       }
     })();
 
@@ -271,6 +328,7 @@
           clearInterval(interval);
           loginPanel.style.display = 'none';
           centerWrap.style.display = '';
+          document.getElementById('fb-status-badge').style.display = 'flex';
         }
       }, 2000);
 
