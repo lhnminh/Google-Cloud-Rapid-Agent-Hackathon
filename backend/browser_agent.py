@@ -6,6 +6,8 @@ def run_browser_agent(recipient_name: str, message_text: str):
     print("\nLaunching browser to send scheduled message...")
     
     session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sessions", "facebook")
+
+    # Confirming headless mode work
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
             user_data_dir=session_dir,
