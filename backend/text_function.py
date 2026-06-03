@@ -56,12 +56,11 @@ def extract_schedule_details(user_prompt: str) -> str:
 
         model = GenerativeModel(
             # TODO: Change model name if needed. Other options: "gemini-2.0-flash", "gemini-1.5-pro"
-            "gemini-2.5-flash-preview-05-20",
-            system_instruction=system_instruction,
+            "gemini-2.5-flash",
         )
 
         response = model.generate_content(
-            user_prompt,
+            [system_instruction, user_prompt],
             generation_config=GenerationConfig(temperature=0.2),
         )
 
