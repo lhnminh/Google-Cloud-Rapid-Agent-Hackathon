@@ -11,7 +11,7 @@ def run_browser_agent(recipient_name: str, message_text: str):
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
             user_data_dir=session_dir,
-            headless=True,
+            headless=False,
             args=["--no-sandbox", "--disable-dev-shm-usage"],
         )
         page = browser.new_page()

@@ -19,6 +19,62 @@ app = FastAPI()
 FRONTEND_PATH = os.path.join(os.path.dirname(__file__), "../frontend/index.html")
 
 
+def _verify_existing_session():
+    """Background check on startup to verify if the saved session is actually valid."""
+    if not os.path.exists(FLAG_PATH):
+        return
+
+    print("Verifying existing Facebook session in the background...")
+    # pyrefly: ignore [missing-import]
+    from playwright.sync_api import sync_playwright
+
+    logged_in = False
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch_persistent_context(
+                user_data_dir=SESSION_DIR,
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage"],
+            )
+            page = browser.new_page()
+            page.goto("https://www.facebook.com/messages")
+            
+            # Wait up to 10 seconds for standard inbox indicators to load
+            for _ in range(5):
+                page.wait_for_timeout(2000)
+                current_url = page.url
+                if "facebook.com/messages" in current_url and "login" not in current_url and "checkpoint" not in current_url:
+                    has_restored_signal = page.get_by_text("End-to-end encrypted messages restored").count() > 0 or "encrypted messages restored" in page.content() or "End-to-end encrypted" in page.content()
+                    has_encrypted_link = "https://www.facebook.com/help/messenger-app/786613221989782/" in page.content() or "786613221989782" in page.content()
+                    has_search = page.locator('input[placeholder*="Search"], input[placeholder*="search"], input[placeholder*="Messenger"]').count() > 0
+                    has_chats = page.locator('[role="navigation"], [role="grid"], [role="main"]').count() > 0
+                    has_pin_prompt = "Enter your PIN" in page.content() or "PIN" in page.content()
+                    
+                    if has_restored_signal or has_encrypted_link or (has_search and has_chats and not has_pin_prompt):
+                        logged_in = True
+                        break
+            browser.close()
+    except Exception as e:
+        print(f"Error during background session verification: {e}")
+        logged_in = False
+
+    if not logged_in:
+        print("Facebook session is invalid or expired. Removing logged_in.flag.")
+        try:
+            if os.path.exists(FLAG_PATH):
+                os.remove(FLAG_PATH)
+        except Exception as e:
+            print(f"Error removing flag file: {e}")
+    else:
+        print("Facebook session verified successfully!")
+
+
+@app.on_event("startup")
+def startup_event():
+    thread = threading.Thread(target=_verify_existing_session, daemon=True)
+    thread.start()
+
+
 @app.get("/")
 def serve_frontend():
     return FileResponse(FRONTEND_PATH)
@@ -63,6 +119,7 @@ def _run_login():
                 try:
                     # Check if the explicit encryption restoration signal has appeared
                     has_restored_signal = page.get_by_text("End-to-end encrypted messages restored").count() > 0 or "encrypted messages restored" in page.content()
+                    has_encrypted_link = "https://www.facebook.com/help/messenger-app/786613221989782/" in page.content() or "786613221989782" in page.content()
                     
                     # Also look for search bar or active chats navigation
                     has_search = page.locator('input[placeholder*="Search"], input[placeholder*="search"], input[placeholder*="Messenger"]').count() > 0
@@ -73,8 +130,9 @@ def _run_login():
                     
                     # We are logged in if:
                     # - The encryption restored text has appeared, OR
+                    # - The encryption learn-more link is present, OR
                     # - Messenger UI is visible and there is no pending PIN entry prompt
-                    if has_restored_signal or (has_search and has_chats and not has_pin_prompt):
+                    if has_restored_signal or has_encrypted_link or (has_search and has_chats and not has_pin_prompt):
                         logged_in = True
                         # Wait 5 seconds to ensure browser flushes authentication state/cookies to disk
                         page.wait_for_timeout(5000)
