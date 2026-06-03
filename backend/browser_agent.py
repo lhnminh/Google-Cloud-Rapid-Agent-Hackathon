@@ -1,5 +1,4 @@
 import os
-import time
 # pyrefly: ignore [missing-import]
 from playwright.sync_api import sync_playwright
 
@@ -10,7 +9,8 @@ def run_browser_agent(recipient_name: str, message_text: str):
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
             user_data_dir=session_dir,
-            headless=False
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
         )
         page = browser.new_page()
 
