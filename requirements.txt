@@ -9,3 +9,4 @@ google-genai
 playwright
 apscheduler
 tzlocal
+requests
