@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist Facebook session data across container restarts
+      - facebook_sessions:/app/backend/sessions/facebook
+    env_file:
+      - .env
+
+volumes:
+  facebook_sessions:

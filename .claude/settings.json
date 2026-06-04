@@ -16,7 +16,8 @@
       "Bash(\"/c/Users/VHV/AppData/Local/Python/pythoncore-3.14-64/Scripts/uv.exe\" add:*)",
       "Bash(\"/c/Users/VHV/AppData/Local/Python/pythoncore-3.14-64/Scripts/uv.exe\" pip:*)",
       "Bash(.venv/Scripts/python.exe -c \"import playwright; print\\(''playwright ok''\\)\")",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(find . -not -path ./.git/* -type d)"
     ],
     "additionalDirectories": [
       "c:\\Users\\VHV\\Documents\\Learn\\Google-Cloud-Rapid-Agent-Hackathon"
