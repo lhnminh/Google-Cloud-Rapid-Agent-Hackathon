@@ -9,10 +9,13 @@ import sys
 import threading
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from main_agent import main_agent
+from gcs_session import download_session, upload_session
 
 SESSION_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sessions", "facebook")
 FLAG_PATH = os.path.join(SESSION_DIR, "logged_in.flag")
 login_state = {"status": "idle"}  # "idle" | "pending" | "success"
+
+GCS_BUCKET = os.environ.get("GCS_SESSION_BUCKET")  # None means GCS sync is disabled
 
 app = FastAPI()
 
@@ -69,9 +72,16 @@ def _verify_existing_session():
         print("Facebook session verified successfully!")
 
 
+def _startup_task():
+    if GCS_BUCKET:
+        print(f"Downloading session from GCS bucket: {GCS_BUCKET}")
+        download_session(GCS_BUCKET, SESSION_DIR)
+    _verify_existing_session()
+
+
 @app.on_event("startup")
 def startup_event():
-    thread = threading.Thread(target=_verify_existing_session, daemon=True)
+    thread = threading.Thread(target=_startup_task, daemon=True)
     thread.start()
 
 
@@ -143,6 +153,9 @@ def _run_login():
         if logged_in:
             with open(FLAG_PATH, "w") as f:
                 f.write("true")
+            if GCS_BUCKET:
+                print(f"Uploading session to GCS bucket: {GCS_BUCKET}")
+                upload_session(GCS_BUCKET, SESSION_DIR)
 
         browser.close()
 

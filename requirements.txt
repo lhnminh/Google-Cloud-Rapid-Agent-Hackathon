@@ -4,6 +4,7 @@ python-dotenv>=1.0.0
 pytest>=8.2.0
 pytest-asyncio>=0.23.0
 google-cloud-aiplatform
+google-cloud-storage
 python-dotenv
 google-genai
 playwright
