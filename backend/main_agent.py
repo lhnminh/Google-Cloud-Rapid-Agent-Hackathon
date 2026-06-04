@@ -85,14 +85,27 @@ def main_agent(user_command: str):
         friend = data.get('recipient')
         ai_message = data.get('message')
         target_time = data.get('execution_time')
+        fetch_gitlab_issues = data.get('fetch_gitlab_issues', False) # Track our new fetch flag
         
-        if not friend or not ai_message or not target_time:
+        if not friend or target_time is None:
             return {
                 "status": "clarification_needed",
                 "message": "Missing information",
                 "clarification": f"I couldn't extract all details. Raw response: {json_raw}"
             }
             
+        # THE DATA RETRIEVAL INTERCEPT
+        if fetch_gitlab_issues:
+            print(f"\n[GitLab Fetch Active]: Contacting remote API to collect project issues...")
+            from text_function import fetch_raw_gitlab_issues, generate_ai_summary
+            
+            # 1. Fetch real, live items from your GitLab profile
+            raw_issues = fetch_raw_gitlab_issues()
+            
+            # 2. Hand them to Gemini to write a perfect executive briefing message
+            print("[Gemini Sync]: Synthesizing raw issues into a text update message...")
+            ai_message = generate_ai_summary(raw_issues)
+        
         print("\nExtraction Successful:")
         print(f"Target Friend : {friend}")
         print(f"AI Message    : {ai_message}")
@@ -106,9 +119,14 @@ def main_agent(user_command: str):
             args=[friend, ai_message]
         )
         
+        if fetch_gitlab_issues:
+            ui_confirmation = f"Successfully pulled your GitLab status briefing and scheduled it for delivery to {friend}: '{ai_message}'"
+        else:
+            ui_confirmation = f"Scheduled message for {friend} at {target_time}: '{ai_message}'"
+        
         return {
             "status": "sent",
-            "message": f"Scheduled message for {friend} at {target_time}: '{ai_message}'",
+            "message": ui_confirmation, 
             "clarification": ""
         }
         
