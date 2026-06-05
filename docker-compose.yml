@@ -8,6 +8,9 @@ services:
     volumes:
       - facebook_sessions:/app/backend/sessions/facebook
       - ./creds/xenon-depth-497608-a4-ef881aa02a8e.json:/app/creds.json
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
 
     env_file:
       - .env
