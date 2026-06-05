@@ -19,8 +19,61 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # pyrefly: ignore [missing-import]
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
-# Initialize background scheduler for web app requests
-bg_scheduler = BackgroundScheduler(timezone=str(get_localzone()))
+import requests
+
+def get_automated_timezone():
+    """Dynamically detects the exact timezone automatically in any environment globally."""
+    # 1. Local Check: If running in Docker with mounted volumes, trust the host system
+    try:
+        from tzlocal import get_localzone
+        local_tz = str(get_localzone())
+        if local_tz and local_tz != "UTC":
+            return local_tz
+    except Exception:
+        pass
+
+    # 2. Global Cloud Check: Query a live IP API to find out exactly where this container is running
+    try:
+        # ipapi.co is free, requires no API keys, and returns a clean text timezone string
+        response = requests.get("https://ipapi.co/timezone/", timeout=3)
+        if response.status_code == 200:
+            detected_tz = response.text.strip()
+            if detected_tz:
+                return detected_tz
+    except Exception as e:
+        print(f"Warning: Global IP timezone lookup skipped: {e}")
+
+    # 3. Cloud Provider Metadata Backup
+    try:
+        headers = {"Metadata-Flavor": "Google"}
+        zone_url = "http://metadata.google.internal/computeMetadata/v1/instance/zone"
+        zone_response = requests.get(zone_url, headers=headers, timeout=2)
+        if zone_response.status_code == 200:
+            full_zone = zone_response.text
+            region = full_zone.split('/')[-1].rsplit('-', 1)[0]
+            
+            # Expanded baseline mappings
+            region_tz_mapping = {
+                "us-central1": "America/Chicago",
+                "us-east1": "America/New_York",
+                "us-west1": "America/Los_Angeles",
+                "asia-east1": "Asia/Taipei",
+                "asia-southeast1": "Asia/Singapore",
+                "asia-southeast2": "Asia/Jakarta",
+                "europe-west1": "Europe/Brussels",
+                "europe-west2": "Europe/London"
+            }
+            return region_tz_mapping.get(region, "UTC")
+    except Exception:
+        pass
+
+    return "UTC"  # Absolute fallback if the container is completely offline on startup
+
+# Initialize background scheduler with true automated timezone discovery
+detected_timezone = get_automated_timezone()
+print(f"🌍 [Timezone Engine]: Automatically initialized using zone: {detected_timezone}")
+
+bg_scheduler = BackgroundScheduler(timezone=detected_timezone)
 bg_scheduler.start()
 
 def parse_json_response(raw: str) -> dict:
