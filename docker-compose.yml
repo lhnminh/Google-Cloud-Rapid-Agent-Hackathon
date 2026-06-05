@@ -6,18 +6,14 @@ services:
       - "6080:6080"
 
     volumes:
-      - facebook_sessions:/app/sessions/facebook
+      - facebook_sessions:/app/backend/sessions/facebook
       - ./creds/xenon-depth-497608-a4-ef881aa02a8e.json:/app/creds.json
-      - ~/.config/gcloud:/root/.config/gcloud:ro
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
     env_file:
       - .env
 
     environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/creds.json
-      - IS_DOCKER=true
+      GOOGLE_APPLICATION_CREDENTIALS: /app/creds.json
 
 volumes:
   facebook_sessions:
