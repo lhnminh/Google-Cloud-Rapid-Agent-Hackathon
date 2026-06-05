@@ -7,7 +7,7 @@ google-cloud-aiplatform
 google-cloud-storage
 python-dotenv
 google-genai
-playwright
+playwright==1.45.0
 apscheduler
 tzlocal
 requests
