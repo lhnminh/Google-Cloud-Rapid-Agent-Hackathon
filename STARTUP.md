@@ -19,9 +19,12 @@ App runs at http://localhost:8080
 
 ### 2. Log in to Facebook
 
-Open http://localhost:8080 in your browser and click **Login to Facebook**.
+1. Open http://localhost:8080 → click **Connect Facebook**
+2. Open http://localhost:6080/vnc.html in a new tab — you will see a Chrome window running inside the container
+3. Log in to Facebook in that tab — complete any 2FA prompts there
+4. Once Messenger loads, the app saves the session automatically (and uploads to GCS if configured)
 
-A browser inside the container will open on a virtual display. The login detection is automatic — once it sees Messenger load, it saves the session to GCS. Future container restarts will pull the session from GCS automatically.
+Future container restarts pull the session from GCS — no need to log in again.
 
 ### 3. Stop
 

@@ -16,6 +16,7 @@ FLAG_PATH = os.path.join(SESSION_DIR, "logged_in.flag")
 login_state = {"status": "idle"}  # "idle" | "pending" | "success"
 
 GCS_BUCKET = os.environ.get("GCS_SESSION_BUCKET")  # None means GCS sync is disabled
+IS_DOCKER = os.environ.get("IS_DOCKER") == "true"
 
 app = FastAPI()
 
@@ -85,6 +86,11 @@ def startup_event():
     thread.start()
 
 
+@app.get("/config")
+def config():
+    return {"docker": IS_DOCKER}
+
+
 @app.get("/")
 def serve_frontend():
     return FileResponse(FRONTEND_PATH)
@@ -109,6 +115,7 @@ def _run_login():
         browser = p.chromium.launch_persistent_context(
             user_data_dir=SESSION_DIR,
             headless=False,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
         )
         page = browser.new_page()
         page.goto("https://www.facebook.com/messages")

@@ -21,7 +21,11 @@ App runs at http://localhost:8080
 
 **2. Log in to Facebook**
 
-Open http://localhost:8080 and click **Login to Facebook**. Complete the login in the browser window that opens on your desktop. The session is saved to the Docker volume automatically.
+1. Open http://localhost:8080 and click **Connect Facebook**
+2. Open http://localhost:6080/vnc.html in a new tab — you will see a Chrome window running inside the container
+3. Log in to Facebook in that noVNC tab — complete any 2FA prompts there
+4. Once Messenger loads, the app detects the login and saves the session automatically
+5. The noVNC tab is no longer needed after this
 
 > The Docker volume is named `facebook_sessions`. If you run `docker compose down -v` it will be deleted and you will need to log in again. Use `docker compose down` (without `-v`) to preserve it.
 
@@ -35,7 +39,9 @@ docker compose down
 | Symptom | Fix |
 |---|---|
 | Port 8080 already in use | Change `"8080:8080"` to `"8081:8080"` in `docker-compose.yml` |
-| Login window never appears | You cannot log in through Docker's invisible display — log in via local dev first (see below) |
+| Port 6080 already in use | Change `"6080:6080"` to `"6081:6080"` in `docker-compose.yml`, then open `:6081/vnc.html` |
+| noVNC tab shows black screen | Xvfb hasn't started yet — wait a few seconds and refresh |
+| noVNC tab shows desktop but no browser | Click Login first at `:8080`, then switch to the noVNC tab |
 | Session lost after restart | You used `docker compose down -v` — log in again |
 
 ### Local dev (no Docker)
@@ -45,22 +51,13 @@ source .venv/Scripts/activate
 python -m uvicorn backend.main:app --reload --port 8000
 ```
 
-Open http://127.0.0.1:8000. Login opens a real visible browser — complete it normally.
+Open http://127.0.0.1:8000. Login opens a real visible Chrome window on your desktop — complete it normally.
 
 ---
 
 ## With GCS — Docker + Cloud Run
 
 Sessions are stored in Google Cloud Storage. They persist across container restarts, machine changes, and Cloud Run deployments. Login once, works everywhere.
-
-### IMPORTANT: Login must be done locally first
-
-The browser that opens during login runs on an invisible virtual display inside Docker and Cloud Run. You cannot type into it. The correct order is:
-
-```
-1. Log in via local dev  →  session uploaded to GCS
-2. Docker / Cloud Run    →  downloads session from GCS on startup
-```
 
 ---
 
@@ -113,30 +110,28 @@ gcloud auth configure-docker us-central1-docker.pkg.dev
 
 ---
 
-### Step A: Log in to Facebook locally (required first time)
-
-Start the app locally with `GCS_SESSION_BUCKET` set in `.env`:
+### Step A: Log in to Facebook via Docker
 
 ```bash
-source .venv/Scripts/activate
-python -m uvicorn backend.main:app --reload --port 8000
+docker compose up --build
 ```
 
-Open http://127.0.0.1:8000 → click **Login to Facebook** → complete login in the real browser window → wait for it to close automatically.
+1. Open http://localhost:8080 → click **Connect Facebook**
+2. Open http://localhost:6080/vnc.html in a new tab — Chrome is running inside the container
+3. Log in to Facebook in the noVNC tab — complete any 2FA there
+4. Once Messenger loads the app detects the login, saves the session, and uploads it to GCS automatically
 
-You should see in the terminal:
+You should see in the Docker terminal:
 ```
 Uploading session to GCS bucket: forgettext-sessions
 Uploaded N session files to GCS.
 ```
 
-> **Login window times out after 120 seconds.** If you hit 2FA, move fast. Click Login again if needed.
-
-> **Upload fails with permission error?** Run `gcloud auth application-default login` then try again.
+> **Login times out after 120 seconds.** If you need more time (slow 2FA), click Connect again.
 
 ---
 
-### Step B: Docker with GCS
+### Step B: Docker with GCS (subsequent runs)
 
 Once the session is in GCS, Docker works with no extra steps:
 
