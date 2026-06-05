@@ -4,6 +4,9 @@ from google.cloud import storage
 # Cache dirs are huge and don't affect session validity — skip them
 _SKIP_DIRS = {"Cache", "Code Cache", "GPUCache", "DawnCache", "ShaderCache"}
 
+_SKIP_FILE_PREFIXES = {
+    "Singleton",
+}
 
 def _gcs_client():
     return storage.Client()
@@ -40,7 +43,15 @@ def upload_session(bucket_name: str, session_dir: str, gcs_prefix: str = "sessio
             # Prune cache dirs in-place so os.walk won't descend into them
             dirs[:] = [d for d in dirs if d not in _SKIP_DIRS]
             for filename in files:
+                if any(filename.startswith(prefix) for prefix in _SKIP_FILE_PREFIXES):
+                    continue
                 local_path = os.path.join(root, filename)
+                # File disappeared during runtime
+                if not os.path.exists(local_path):
+                    continue
+                # Skip sockets / special files
+                if not os.path.isfile(local_path):
+                    continue
                 relative = os.path.relpath(local_path, session_dir).replace("\\", "/")
                 blob = bucket.blob(gcs_prefix + relative)
                 blob.upload_from_filename(local_path)

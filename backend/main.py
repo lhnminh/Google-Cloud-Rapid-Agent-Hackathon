@@ -48,7 +48,7 @@ def _verify_existing_session():
                 page.wait_for_timeout(2000)
                 current_url = page.url
                 if "facebook.com/messages" in current_url and "login" not in current_url and "checkpoint" not in current_url:
-                    has_restored_signal = page.get_by_text("End-to-end encrypted messages restored").count() > 0 or "encrypted messages restored" in page.content() or "End-to-end encrypted" in page.content()
+                    has_restored_signal = page.get_by_text("End-to-end encrypted messages restored").count() > 0 or "encrypted messages restored" in page.content() or "End-to-end encrypted" in page.content() or "restored" in page.content()
                     has_encrypted_link = "https://www.facebook.com/help/messenger-app/786613221989782/" in page.content() or "786613221989782" in page.content()
                     has_search = page.locator('input[placeholder*="Search"], input[placeholder*="search"], input[placeholder*="Messenger"]').count() > 0
                     has_chats = page.locator('[role="navigation"], [role="grid"], [role="main"]').count() > 0

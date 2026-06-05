@@ -4,11 +4,16 @@ services:
     ports:
       - "8080:8080"
       - "6080:6080"
+
     volumes:
-      # Persist Facebook session data across container restarts
       - facebook_sessions:/app/backend/sessions/facebook
+      - ./creds/xenon-depth-497608-a4-ef881aa02a8e.json:/app/creds.json
+
     env_file:
       - .env
+
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/creds.json
 
 volumes:
   facebook_sessions:
