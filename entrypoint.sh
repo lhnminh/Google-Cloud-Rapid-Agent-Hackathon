@@ -10,6 +10,6 @@ sleep 2
 x11vnc -display :99 -nopw -forever -quiet &
 
 # Serve the VNC display in the browser via noVNC on port 6080
-/usr/share/novnc/utils/novnc_proxy --vnc localhost:5900 --listen 6080 &
+websockify --web=/usr/share/novnc/ 6080 localhost:5900 &
 
 exec uvicorn backend.main:app --host 0.0.0.0 --port "${PORT:-8080}"

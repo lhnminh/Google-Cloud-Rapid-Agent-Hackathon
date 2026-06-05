@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/playwright/python:v1.45.0-jammy
 WORKDIR /app
 
 # Install Xvfb for virtual display, x11vnc to share it, novnc to access it from a browser
-RUN apt-get update && apt-get install -y xvfb x11vnc novnc && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && playwright install chromium
@@ -15,7 +15,7 @@ COPY frontend/ frontend/
 RUN mkdir -p backend/sessions/facebook
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENV PORT=8080
 ENV DISPLAY=:99
