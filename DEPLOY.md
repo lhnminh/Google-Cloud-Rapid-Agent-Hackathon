@@ -157,12 +157,12 @@ Facebook session verified successfully!
 ```bash
 gcloud projects describe xenon-depth-497608-a4 --format="value(projectNumber)"
 ```
-The default Cloud Run service account is: `PROJECT_NUMBER-compute@developer.gserviceaccount.com`
+The default Cloud Run service account is: `979354757072-compute@developer.gserviceaccount.com`
 
 **2. Grant GCS access to the service account**
 ```bash
 gcloud storage buckets add-iam-policy-binding gs://forgettext-sessions \
-  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:979354757072-compute@developer.gserviceaccount.com" \
   --role="roles/storage.objectAdmin"
 ```
 > Skip this → Cloud Run logs `403 Forbidden` when downloading the session.
@@ -170,7 +170,7 @@ gcloud storage buckets add-iam-policy-binding gs://forgettext-sessions \
 **3. Grant Secret Manager access to the service account**
 ```bash
 gcloud projects add-iam-policy-binding xenon-depth-497608-a4 \
-  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:979354757072-compute@developer.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 ```
 > Skip this → Cloud Run fails to start entirely.
@@ -218,8 +218,7 @@ Look for `Facebook session verified successfully!`
 ### Redeploying after code changes
 
 ```bash
-IMAGE=us-central1-docker.pkg.dev/xenon-depth-497608-a4/forgettext/app:latest
-
+IMAGE="us-central1-docker.pkg.dev/xenon-depth-497608-a4/forgettext/app:latest"
 docker build -t $IMAGE .
 docker push $IMAGE
 gcloud run deploy forgettext --image=$IMAGE --region=us-central1 --project=xenon-depth-497608-a4
@@ -239,3 +238,19 @@ Session in GCS is untouched. No re-login needed.
 | `No session files found in GCS` | Never logged in | Complete Step A |
 | Container exits immediately | Out of memory | Increase `--memory` to `4Gi` |
 | Scheduled messages stop after idle | Min-instances is 0 | Add `--min-instances=1` to deploy |
+
+
+
+
+IMAGE="us-central1-docker.pkg.dev/xenon-depth-497608-a4/forgettext/app:latest"
+
+docker buildx build \
+  --platform linux/amd64 \
+  -t $IMAGE \
+  . \
+  --push
+
+gcloud run deploy forgettext \
+  --image=$IMAGE \
+  --region=us-central1 \
+  --project=xenon-depth-497608-a4
