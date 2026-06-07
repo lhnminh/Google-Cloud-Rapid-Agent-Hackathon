@@ -120,6 +120,24 @@ def _run_login():
         page = browser.new_page()
         page.goto("https://www.facebook.com/messages")
 
+        try:
+            # Wait a bit longer to ensure the DOM is fully interactive
+            page.wait_for_timeout(3000) 
+            
+            # Specifically target the decline button
+            decline_btn = page.get_by_role("button", name="Decline optional cookies", exact=False)
+            
+            if decline_btn.count() > 0:
+                decline_btn.first.click()
+                print("Successfully rejected optional cookies.")
+            else:
+                # If we don't see it, it might already be gone, or Facebook has changed the UI
+                print("Decline button not found. Proceeding with login.")
+                
+        except Exception as e:
+            # We don't want to crash the whole app just because we couldn't click a button
+            print(f"Could not reject cookies automatically: {e}")
+
         timeout_seconds = 120
         interval = 2
         elapsed = 0
