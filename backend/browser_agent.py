@@ -3,6 +3,13 @@ import os
 from playwright.sync_api import sync_playwright
 
 
+def _send_browser_headless():
+    configured = os.environ.get("SEND_BROWSER_HEADLESS")
+    if configured is None:
+        return True
+    return configured.lower() not in {"0", "false", "no"}
+
+
 def _log_page_state(page, label: str):
     try:
         body_text = page.locator("body").inner_text(timeout=3000)
@@ -138,12 +145,12 @@ def run_browser_agent(recipient_name: str, message_text: str):
     print("\nLaunching browser to send scheduled message...", flush=True)
     
     session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sessions", "facebook")
+    headless = _send_browser_headless()
 
-    # Confirming headless mode work
     with sync_playwright() as p:
         browser = p.chromium.launch_persistent_context(
             user_data_dir=session_dir,
-            headless=False,
+            headless=headless,
             args=["--no-sandbox", "--disable-dev-shm-usage"],
         )
         page = browser.new_page()
