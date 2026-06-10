@@ -1,5 +1,42 @@
+# Environment and secrets
 .env
-__pycache__/
-sessions/
-*.pyc
+.env.*
+!.env.example
 creds/
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Browser/session state
+sessions/
+backend/sessions/
+test/sessions/
+
+# Local/generated project notes
+.claude/
+.superpowers/
+current_problem.md
+docs/
+STARTUP.md
+setup.sh
+
+# Archived scratch scripts from early prototypes
+test/
+
+# OS/editor noise
+.DS_Store
+*.swp
+*.swo
+
+# Runtime logs/artifacts
+*.log
+*.tar.gz
