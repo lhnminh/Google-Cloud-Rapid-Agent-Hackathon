@@ -1,45 +1,199 @@
-# Google-Cloud-Rapid-Agent-Hackathon
+# ForgetText
 
-# 🗓️ [TBD: The Name] - Universal Message Automation Engine
-**A centralized platform for scheduling and automating message delivery across disparate communication channels.**
+ForgetText is an AI message scheduler for Facebook Messenger. A user types a natural-language instruction such as "send Minh a reminder in 20 minutes", and the app parses the recipient, writes or extracts the message, schedules the job, and uses a real browser session to send it through Messenger.
 
-*(Placeholder for the ideal name once finalized, e.g., "ConnectSend," "ScheduleFlow," or "OmniMessenger.")*
+Built for the Google Cloud Rapid Agent Hackathon, the project demonstrates an agentic workflow that combines Gemini on Vertex AI, FastAPI, Playwright browser automation, Cloud Run, and Google Cloud Storage.
 
-## ✨ Vision (The Pitch)
----
-Currently, digital communications are fragmented. Businesses rely on multiple message services (WhatsApp, Telegram, SMS, etc.), yet each platform operates in a silo without built-in scheduling capabilities. This forces users into cumbersome workarounds and manual processes, leading to inconsistent outreach and missed opportunities.
+## Demo Flow
 
-**[Project Name]** solves this integration challenge by providing a single, centralized hub that schedules, manages, and executes scheduled messaging across any connected channel seamlessly.
+1. Open the web app.
+2. Connect a Facebook account once through the noVNC browser login flow.
+3. Type a scheduling instruction in plain English.
+4. Gemini extracts structured scheduling details and drafts the message when needed.
+5. APScheduler queues the send job.
+6. At the target time, Playwright opens Messenger with the saved session and sends the message.
 
-## 🎯 Key Pillars & Features (The Scope)
----
-Our system is designed around robust automation and reliability:
+Example prompts:
 
-*   ✅ **Cross-Platform Scheduling:** Schedule complex message sequences for specific future times on multiple channels simultaneously, regardless of the platform's native capability.
-*   🧠 **AI Content Optimization:** Incorporate AI logic to optimize messages based on time-of-day trends or user engagement patterns (e.g., ensuring a marketing blast lands when the recipient is most likely online).
-*   🌐 **Centralized Message Log:** Maintain an immutable, auditable log of all scheduled and sent messages across *all* connected services, providing unparalleled transparency for client management.
+```text
+Send Minh Ngoc "testing from Cloud Run" in 20 seconds
+```
 
-## 🏗️ Architectural Blueprint & Tech Stack (The Strength)
----
-This project requires robust, scalable enterprise tools to manage data flow between multiple APIs. Our proposed architecture leverages best-in-class cloud infrastructure:
+```text
+Tell Alex happy birthday tomorrow at 9am
+```
 
-| Component | Technology / Tool | Role in the System | Why It's Used |
-| :--- | :--- | :--- | :--- |
-| **Data Integration** | `Fivetran` (or similar ETL) | Connects and ingests data reliably from various sources/APIs. | Ensures clean, continuous syncing of message status across disparate services. |
-| **Orchestration / Logic** | `Google Cloud Agent Builder` | The core intelligence layer that executes scheduling rules, handles failure logic, and directs messages. | Provides the complex workflow management needed to orchestrate multi-step sending processes. |
-| **Backend Framework** | `[Python/Node.js]` (To be determined) | Handles API communication, user authentication, and business logic execution. | Fast prototyping and handling of complex asynchronous tasks. |
-| **Database** | `[Cloud SQL/MongoDB]` | Stores scheduled messages, user metadata, and sending history. | Scalable storage for massive amounts of chronological message data. |
+```text
+Send Minh a summary of my GitLab issues at 5pm
+```
 
-## 🚧 Phase I: Scope & Roadmap (The Plan)
----
-Since this is in the ideation phase, our focus has been on defining the architecture first. Our phased rollout plan includes:
+The GitLab summary flow requires `GITLAB_PERSONAL_ACCESS_TOKEN`.
 
-1.  **Phase 0 (Current):** Define core API endpoints and architect the data flow using cloud mapping tools (Fivetran).
-2.  **Phase I:** Implement scheduling for *[Select 1-2 primary services, e.g., WhatsApp & SMS]*. Focus on reliable scheduling and basic logging.
-3.  **Phase II:** Introduce AI content optimization and expand integration to secondary channels *[e.g., LinkedIn Messaging API]*.
+## What It Uses
 
-## ⭐ Getting Started (Next Steps)
----
-This repository will serve as our working blueprint for the system design, including mock API calls, data schema drafts, and cloud resource mapping. We are currently focused on finalizing service partnerships and solidifying the primary language stack.
+| Layer | Technology | Purpose |
+|---|---|---|
+| Frontend | HTML, CSS, JavaScript | Chat-style scheduling UI and Facebook login status flow |
+| API | FastAPI | Serves the frontend and exposes `/login/*` and `/send-message` endpoints |
+| Agent reasoning | Gemini 2.5 Flash on Vertex AI | Parses natural language into recipient, message, target time, and optional GitLab intent |
+| Scheduler | APScheduler | Runs future message jobs inside the app process |
+| Browser automation | Playwright Chromium | Reuses a saved Messenger session and sends the message |
+| Session persistence | Google Cloud Storage | Stores the Facebook browser session for Cloud Run redeploys/restarts |
+| Deployment | Docker, Artifact Registry, Cloud Run | Runs the app as a container with one warm instance for scheduled jobs |
 
-**Need to collaborate?** Feel free to open an issue discussing potential message services or scheduling edge cases!
+## Architecture
+
+```text
+User
+  |
+  v
+Frontend chat UI
+  |
+  v
+FastAPI /send-message
+  |
+  v
+Gemini on Vertex AI
+  |
+  v
+APScheduler job
+  |
+  v
+Playwright + saved Messenger session
+  |
+  v
+Facebook Messenger
+```
+
+For Cloud Run, the Facebook session is downloaded from GCS on startup. Local Docker uses noVNC so the user can complete the first Facebook login inside the container; after login, the session is uploaded to GCS.
+
+## Repository Map
+
+```text
+backend/main.py          FastAPI app, login endpoints, session verification
+backend/main_agent.py    Agent orchestration and scheduling
+backend/text_function.py Gemini parsing and optional GitLab summarization
+backend/browser_agent.py Playwright Messenger automation
+backend/gcs_session.py   GCS upload/download for Facebook session archive
+frontend/index.html      Single-page web UI
+entrypoint.sh            Docker startup for Xvfb, noVNC, and Uvicorn
+CLOUD_DEPLOYMENT.md      End-to-end Cloud Run deployment guide
+DEPLOY.md                Shorter local and deployment notes
+```
+
+## Local Run
+
+Prerequisites:
+
+- Docker Desktop
+- Google Cloud CLI authenticated with access to the project
+- `.env` containing:
+
+```text
+GCP_PROJECT_ID=xenon-depth-497608-a4
+GCP_LOCATION=us-central1
+GCS_SESSION_BUCKET=forgettext-sessions
+```
+
+Start the app:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
+
+For first-time Facebook login:
+
+1. Click **Connect Facebook** in the app.
+2. Open `http://localhost:6080/vnc.html`.
+3. Log in to Facebook inside the noVNC browser.
+4. Wait for the app to detect Messenger and upload the session to GCS.
+
+Do not run `docker compose down -v` unless you want to delete the local Facebook session volume.
+
+## Cloud Run Deploy
+
+The deployed service must keep one instance alive and keep CPU allocated after requests, because scheduled jobs run inside the app process.
+
+Build and push:
+
+```bash
+IMAGE="us-central1-docker.pkg.dev/xenon-depth-497608-a4/forgettext/app:latest"
+
+docker buildx build \
+  --platform linux/amd64 \
+  -t "$IMAGE" \
+  . \
+  --push
+```
+
+Deploy:
+
+```bash
+gcloud run deploy forgettext \
+  --image="$IMAGE" \
+  --region=us-central1 \
+  --project=xenon-depth-497608-a4 \
+  --platform=managed \
+  --allow-unauthenticated \
+  --memory=2Gi \
+  --cpu=2 \
+  --timeout=300 \
+  --min-instances=1 \
+  --no-cpu-throttling \
+  --set-env-vars="GCP_PROJECT_ID=xenon-depth-497608-a4,GCP_LOCATION=us-central1,GCS_SESSION_BUCKET=forgettext-sessions,SEND_BROWSER_HEADLESS=true" \
+  --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest"
+```
+
+Read logs:
+
+```bash
+gcloud run services logs read forgettext \
+  --region=us-central1 \
+  --project=xenon-depth-497608-a4 \
+  --limit=100
+```
+
+More detailed deployment setup, IAM permissions, and troubleshooting are in [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md).
+
+## Testing
+
+```bash
+uv run pytest -q
+```
+
+Current tests cover login status behavior, Messenger-ready detection, and scheduled browser headless configuration.
+
+## Hackathon Notes
+
+Why this is agentic:
+
+- The user gives a goal in natural language rather than filling out a rigid form.
+- Gemini converts that goal into structured execution data.
+- The system schedules work for the future and executes it later without another user action.
+- Playwright performs the final task in a real browser session, allowing automation of a consumer messaging surface that does not expose a simple scheduling API.
+
+Why Google Cloud matters:
+
+- Vertex AI provides the Gemini reasoning step.
+- Cloud Run hosts the always-on containerized agent service.
+- Cloud Storage persists browser session state across stateless Cloud Run instances.
+- Artifact Registry stores the deployable image.
+
+## Current Limitations
+
+- Facebook UI changes can break selectors; the app includes guardrails to avoid typing into generic Facebook search or comment boxes.
+- Scheduled jobs are in-process, so production-grade durability would require an external queue or database-backed scheduler.
+- The first Facebook session must be created manually through noVNC.
+- GitLab summarization requires a configured `GITLAB_PERSONAL_ACCESS_TOKEN` secret.
+
+## Security
+
+- Do not commit `.env`, Google credential files, API keys, or Facebook session files.
+- Use Secret Manager for deploy-time secrets.
+- Use Cloud Run service account IAM for GCS, Vertex AI, and Secret Manager access.
